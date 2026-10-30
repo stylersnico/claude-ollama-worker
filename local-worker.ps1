@@ -1,12 +1,12 @@
 <#
 local-worker.ps1 - delegate a precise coding task to an Ollama model, on a dedicated git branch.
-Usage : local-worker.ps1 [-e aider|claude] [-m cloud|std|alt] <name> "<precise task>" [files... (aider)]
+Usage : local-worker.ps1 [-e aider|claude] [-m std|alt|cloud] <name> "<precise task>" [files... (aider)]
   -e aider (default) : aider, files to edit passed explicitly (shorter prompt, faster on CPU)
   -e claude          : Claude Code headless pointed at Ollama
-  -m cloud (default) : Ollama Cloud model; falls back to std if the quota is exhausted
-  -m std             : standard local/remote coding model
+  -m std (default)   : standard coding model on your remote (LAN) Ollama server, or local Ollama with an NVIDIA GPU
+  -m cloud           : Ollama Cloud model, opt-in (needs a plan with cloud quota); falls back to std if refused
   -m alt             : alternative model, only if std refuses a legitimate task
-Order of backends : Ollama Cloud -> remote Ollama server (OLLAMA_REMOTE_URL) -> local Ollama (only with an NVIDIA GPU).
+Backends : remote Ollama server (OLLAMA_REMOTE_URL), else local Ollama (only with an NVIDIA GPU). Ollama Cloud only with -m cloud.
 Result : a commit on branch local/<name>, in a separate worktree. Review, then merge.
 
 Configuration (environment variables, all optional) :
@@ -17,7 +17,7 @@ Configuration (environment variables, all optional) :
 #>
 param(
   [Alias('e')][ValidateSet('claude','aider')][string]$Engine = 'aider',
-  [Alias('m')][ValidateSet('cloud','std','alt')][string]$Kind = 'cloud',
+  [Alias('m')][ValidateSet('cloud','std','alt')][string]$Kind = 'std',
   [Parameter(Position=0, Mandatory)][string]$Name,
   [Parameter(Position=1, Mandatory)][string]$Task,
   [Parameter(Position=2, ValueFromRemainingArguments)][string[]]$Files
